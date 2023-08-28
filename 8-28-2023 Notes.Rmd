@@ -1,0 +1,57 @@
+---
+title: "8-28-2023 Notes"
+author: "Ian Sebby"
+date: "2023-08-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(lattice)
+library(dplyr)
+```
+
+Example: 2006 Birth Data
+
+```{r}
+load(file = "births2006.smpl.rda")
+```
+
+```{r}
+## Names and Dimension of Data
+names(births2006.smpl)
+dim(births2006.smpl)
+```
+
+```{r}
+## First Five Rows
+births2006.smpl[1:5,]
+```
+
+```{r}
+births2006.dow <- table(births2006.smpl$DOB_WK)
+births2006.dow
+barchart(births2006.dow, ylab="Day of Week")
+```
+
+```{r}
+dob.dm.tbl=table(WK=births2006.smpl$DOB_WK, MM=births2006.smpl$DMETH_REC)
+dob.dm.tbl
+dob.dm.tbl=dob.dm.tbl[,-2] # Remove the second column from table
+dob.dm.tbl
+barchart(dob.dm.tbl, ylab="Day of Week")
+barchart(dob.dm.tbl, horizontal=FALSE, groups=FALSE, xlab="Day of Week")
+```
+
+```{r}
+histogram(~DBWT|DPLURAL, data=births2006.smpl, layout=c(1,5), col="black")
+```
+
+```{r}
+histogram(~DBWT|DMETH_REC, data=births2006.smpl, layout=c(1,3), col="black")
+```
+
