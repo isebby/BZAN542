@@ -1,0 +1,189 @@
+---
+title: Lab 2
+output: word_document
+---
+
+BZAN 542
+
+Charles Liu
+
+```{r}
+library(dplyr)
+```
+
+# Iris Example
+
+```{r}
+str(iris)
+x=iris$Petal.Length
+y=iris$Petal.Width
+c=iris$Species
+table(c)
+```
+
+```{r}
+plot(x, y, pch=as.numeric(c), xlab='Petal Length', ylab='Petal Width', main ='Iris')
+legend('topleft', pch=c(1,2,3), levels(c))
+xlimits=c(2.5, 5)
+ylimits=c(0.75, 1.75)
+for (xlimit in xlimits) {
+  abline(v=xlimit)
+}
+for (ylimit in ylimits) {
+  abline(h=ylimit)
+}
+```
+
+# Transformation
+
+```{r}
+x1=character()
+x1[x<=2.5]='low'
+x1[2.5<x & x<=5]='medium'
+x1[x>5]='high'
+## these lines are equivalent of:
+# x1=cut(x, c(-Inf, 2.5, 5, Inf), labels=c('low','medium','high'))
+
+y1=character()
+y1[y<=0.75]='low'
+y1[0.75<y & y<=1.75]='medium'
+y1[y>1.75]='high'
+## these lines are equivalent of:
+# y1=cut(y, c(-Inf, 0.75, 1.75, Inf), labels=c('low','medium','high'))
+
+x2=cbind(x1=='low',x1=='medium',x1=='high')
+y2=cbind(y1=='low',y1=='medium',y1=='high')
+labels=c('low','medium','high')
+colnames(x2)=colnames(y2)=labels
+class(x2)='numeric'
+class(y2)='numeric'
+# these lines are equivalent of:
+# x2=model.matrix(~0+x1)
+# y2=model.matrix(~0+y1)
+```
+
+```{r}
+ind=sample(1:nrow(iris), 10, replace = FALSE)
+cbind(x,x1,x2)[ind,]
+cbind(y,y1,y2)[ind,]
+```
+
+```{r}
+# transformation with dplyr
+iris = iris %>%
+mutate(
+    Petal.Length.Cut=cut(Petal.Length, c(-Inf, 2.5, 5, Inf), labels=labels)
+    ,
+    Petal.Width.Cut=cut(Petal.Width, c(-Inf, 0.75, 1.75, Inf), labels=labels)
+)
+iris[ind,]
+```
+
+```{r}
+model.matrix(~0+Petal.Length.Cut, data=iris)[ind,]
+```
+
+```{r}
+model.matrix(~0+Petal.Width.Cut, data=iris)[ind,]
+```
+
+# Distance
+
+```{r}
+data=cbind(x=c(0,2,3,5),y=c(2,0,1,1))
+data
+```
+
+```{r}
+dist(data, method="euclidean")
+dist(data, method="manhattan")
+dist(data, method="minkowski", p=1)
+dist(data, method="minkowski", p=2)
+dist(data, method="minkowski", p=20)
+dist(data, method="minkowski", p=200)
+dist(data, method="maximum")
+dist(data, method="binary")
+```
+
+```{r}
+apply(data, 2, mean)
+apply(data, 2, sd)
+data=scale(data)
+apply(data, 2, mean)
+apply(data, 2, sd)
+data
+dist(data, method="euclidean")
+```
+
+# PCA
+
+```{r}
+food <- read.csv("protein.csv")
+food
+## correlation matrix
+## we strip the first column (country labels)
+cor(food[,-1])
+```
+
+```{r}
+## scale = TRUE: variables are first standardized
+pcafood <- prcomp(food[,-1], scale=TRUE)
+pcafood
+```
+
+```{r}
+foodpc <- predict(pcafood)
+foodpc
+```
+
+```{r}
+## how many principal components do we need?
+plot(pcafood, main="Principal Components of European Protein")
+```
+
+```{r}
+biplot(pcafood, main="Principal Components of European Protein")
+```
+
+## how do the PCs look?
+
+```{r}
+plot(foodpc[,1:2], type="n", xlim=c(-4,5))
+text(x=foodpc[,1], y=foodpc[,2], labels=food$Country)
+```
+
+```{r}
+plot(foodpc[,3:4], type="n", xlim=c(-3,3))
+text(x=foodpc[,3], y=foodpc[,4], labels=food$Country)
+```
+
+## how do the original variables look?
+
+```{r}
+plot(food$RedMeat, y=food$WhiteMeat, type="n")
+text(x=food$RedMeat, y=food$WhiteMeat, labels=food$Country)
+```
+
+```{r}
+plot(food$Eggs, y=food$Milk, type="n")
+text(x=food$Eggs, y=food$Milk, labels=food$Country)
+```
+
+# High Dimensional Distance
+
+```{r}
+N <- 100
+D_min <- c()
+D_max <- c()
+M_dim <- c(1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
+for (M in M_dim){
+    X <- matrix( rnorm(N*M), N, M )
+    D <- dist(X)
+    D_min <- append(D_min, min(D))
+    D_max <- append(D_max, max(D))
+}
+```
+
+```{r}
+plot(M_dim, D_min/D_max, 'l')
+```
