@@ -32,6 +32,8 @@ for (xlimit in xlimits) {
 for (ylimit in ylimits) {
   abline(h=ylimit)
 }
+
+nrow(iris[which(iris$Petal.Width >= 0.75 & iris$Petal.Width <= 1.75 & iris$Petal.Length >= 2.5 & iris$Petal.Length <= 5),])
 ```
 
 # Transformation
